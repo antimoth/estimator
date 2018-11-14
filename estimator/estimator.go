@@ -384,7 +384,7 @@ func (et *Estimator) RunEstimator() {
 		for {
 			select {
 			case <-tiker.C:
-				price10min, err := et.GasPriceEstimator(120)
+				price10min, err := et.GasPriceEstimator(180)
 				if err != nil {
 					break
 				}
