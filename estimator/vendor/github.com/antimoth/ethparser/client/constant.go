@@ -1,0 +1,8 @@
+package client
+
+const (
+	VALID_TX_VALID_TX = iota
+	VALID_TX_RPC_ERROR
+	VALID_TX_NOT_FOUND
+	VALID_TX_JSON_ERROR
+)
