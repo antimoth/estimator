@@ -384,40 +384,45 @@ func (et *Estimator) RunEstimator() {
 		for {
 			select {
 			case <-tiker.C:
-				price10min, err := et.GasPriceEstimator(180)
+				price10min, err := et.GasPriceEstimator(240)
 				if err != nil {
 					break
 				}
 				if et.PrePrice.Cmp(price10min) < 0 {
 					price10min = decimal.NewFromBigInt(price10min, 0).Mul(decimal.NewFromFloat(1.1)).Ceil().Coefficient()
 				}
+				price10min = RoundBigInt(price10min, 7)
 				et.PrePrice = price10min
 
 				var data []Estimated
 				data = append(data, Estimated{Latency: 600, Price: price10min.Uint64()})
 
-				price30min, err := et.GasPriceEstimator(600)
+				price30min, err := et.GasPriceEstimator(720)
 				if err != nil || price30min.Cmp(price10min) >= 0 {
-					price30min = decimal.NewFromBigInt(price10min, 0).Mul(decimal.NewFromFloat(0.95)).Ceil().Coefficient()
+					price30min = decimal.NewFromBigInt(price10min, 0).Mul(decimal.NewFromFloat(0.9)).Ceil().Coefficient()
 				}
+				price30min = RoundBigInt(price30min, 7)
 				data = append(data, Estimated{Latency: 1800, Price: price30min.Uint64()})
 
-				price2h, err := et.GasPriceEstimator(1800)
+				price2h, err := et.GasPriceEstimator(2880)
 				if err != nil || price2h.Cmp(price30min) >= 0 {
-					price2h = decimal.NewFromBigInt(price30min, 0).Mul(decimal.NewFromFloat(0.95)).Ceil().Coefficient()
+					price2h = decimal.NewFromBigInt(price30min, 0).Mul(decimal.NewFromFloat(0.9)).Ceil().Coefficient()
 				}
+				price2h = RoundBigInt(price2h, 7)
 				data = append(data, Estimated{Latency: 7200, Price: price2h.Uint64()})
 
-				price12h, err := et.GasPriceEstimator(3600)
+				price12h, err := et.GasPriceEstimator(7200)
 				if err != nil || price12h.Cmp(price2h) >= 0 {
-					price12h = decimal.NewFromBigInt(price2h, 0).Mul(decimal.NewFromFloat(0.9)).Ceil().Coefficient()
+					price12h = decimal.NewFromBigInt(price2h, 0).Mul(decimal.NewFromFloat(0.85)).Ceil().Coefficient()
 				}
+				price12h = RoundBigInt(price12h, 7)
 				data = append(data, Estimated{Latency: 43200, Price: price12h.Uint64()})
 
-				price1d, err := et.GasPriceEstimator(7200)
+				price1d, err := et.GasPriceEstimator(14400)
 				if err != nil || price1d.Cmp(price12h) >= 0 {
-					price1d = decimal.NewFromBigInt(price12h, 0).Mul(decimal.NewFromFloat(0.8)).Ceil().Coefficient()
+					price1d = decimal.NewFromBigInt(price12h, 0).Mul(decimal.NewFromFloat(0.85)).Ceil().Coefficient()
 				}
+				price1d = RoundBigInt(price1d, 7)
 				data = append(data, Estimated{Latency: 86400, Price: price1d.Uint64()})
 
 				et.mgo.DB(selfconf.EstimatorMgoDB).C(selfconf.EstimatorMgoTable).Upsert(bson.M{"id": MONGO_DOC_ID}, &EstimatedList{ID: MONGO_DOC_ID, PriceList: data})

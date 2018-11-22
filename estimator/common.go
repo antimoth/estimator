@@ -11,7 +11,19 @@ import (
 var (
 	ErrNoEnoughBlocks = errors.New("no enough blocks to statistic, please wait a moment.")
 	ErrInvalidData    = errors.New("invalid statistic data")
+	zeroInt           = big.NewInt(0)
+	oneInt            = big.NewInt(1)
+	tenInt            = big.NewInt(10)
 )
+
+func RoundBigInt(x *big.Int, places int64) *big.Int {
+	div := new(big.Int).Exp(tenInt, big.NewInt(places), nil)
+	rounded, m := new(big.Int).DivMod(x, div, new(big.Int))
+	if m.Cmp(zeroInt) != 0 {
+		rounded = rounded.Add(rounded, oneInt)
+	}
+	return rounded.Mul(rounded, div)
+}
 
 type MinerData struct {
 	Miner         *common.Address
